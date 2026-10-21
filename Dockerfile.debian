@@ -105,6 +105,7 @@ ENV LANG=C.UTF-8
 
 # Install dependencies
 # Using sury.org for PHP 8.3 to match Alpine version
+COPY scripts/check_php_runtime.py /tmp/check_php_runtime.py
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tini \
     snmp \
@@ -146,6 +147,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     php8.3-sqlite3 \
     php8.3-common \
     php8.3-curl \
+    && python3 /tmp/check_php_runtime.py --cli php8.3 --server php-fpm8.3 \
+    && rm /tmp/check_php_runtime.py \
     && ln -s /usr/sbin/php-fpm8.3 /usr/sbin/php-fpm \
     && ln -s /usr/sbin/php-fpm8.3 /usr/sbin/php-fpm83 \
     && ln -s /usr/sbin/gosu /usr/sbin/su-exec \

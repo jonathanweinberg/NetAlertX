@@ -131,10 +131,14 @@ ENV NETALERTX_USER=netalertx NETALERTX_GROUP=netalertx
 ENV LANG=C.UTF-8
 
 
+COPY scripts/check_php_runtime.py /tmp/check_php_runtime.py
 RUN apk add --no-cache bash mtr libbsd zip lsblk tzdata curl arp-scan iproute2 iproute2-ss iw nmap fping \
     nmap-scripts traceroute nbtscan net-tools net-snmp-tools bind-tools awake ca-certificates \
-    sqlite php83 php83-fpm php83-cgi php83-curl php83-sqlite3 php83-session python3 py3-psutil envsubst \
+    sqlite 'php83>=8.3.36' 'php83-fpm>=8.3.36' 'php83-cgi>=8.3.36' \
+    'php83-curl>=8.3.36' 'php83-sqlite3>=8.3.36' 'php83-session>=8.3.36' python3 py3-psutil envsubst \
     nginx supercronic shadow su-exec jq && \
+    python3 /tmp/check_php_runtime.py --cli php83 --server php-fpm83 --server php-cgi83 && \
+    rm /tmp/check_php_runtime.py && \
     rm -Rf /var/cache/apk/*  && \
     rm -Rf /etc/nginx && \
     addgroup -g ${NETALERTX_GID} ${NETALERTX_GROUP} && \

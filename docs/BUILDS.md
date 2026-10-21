@@ -80,3 +80,31 @@ Dockerfile -> builder (Stage 1) -> runner (Stage 2) ->  hardened (Final Stage) (
 ## Legacy Build Path
 
 Dockerfile.debian -> "Tinkerer's" Image (Insecure VM-Style Image)
+
+## PHP Security Floor
+
+Container builds verify the CLI and each installed PHP serving binary before
+hardening. The guard also checks the curl, session and sqlite3 extensions.
+PHP 8.3 packages must be at least 8.3.36, which fixes CVE-2026-109618 and
+CVE-2026-109619. The guard has equivalent upstream security floors for reviewed
+PHP 8.2, 8.4 and 8.5 releases, but this does not change the builds from PHP 8.3.
+
+If Alpine has not published the required packages for a target architecture,
+the build intentionally fails rather than producing another affected image.
+Do not mix repositories from other Alpine branches, bypass package signatures,
+or lower the version floor to make the build pass. Rebuild after the maintained
+repositories provide the patched PHP package family. A vendor backport with an
+older upstream version requires separate verification and an explicit policy
+change; the numeric guard does not infer backport safety.
+
+The same checks run in the Debian build against its configured package source.
+An application release tag alone does not establish the bundled PHP version.
+
+Run the focused guard tests with:
+
+```bash
+python3 -m unittest discover -s test/build -p 'test_php_runtime.py'
+```
+
+These focused checks do not replace the full contributor test suite or the
+production build matrix for amd64, arm64, arm/v7 and arm/v6.
